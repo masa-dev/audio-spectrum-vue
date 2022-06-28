@@ -4,8 +4,8 @@
     <div>
       <canvas id="my-canvas"></canvas>
     </div>
-    <!--     <BasicAudioVisualiserTest mediaUrl="/music/季節は次々死んでいく.mp3" />
-    <BasicAudioVisualiser /> -->
+    <!--<BasicAudioVisualiserTest mediaUrl="/music/季節は次々死んでいく.mp3" />-->
+    <BasicAudioVisualiser />
   </div>
 </template>
 
