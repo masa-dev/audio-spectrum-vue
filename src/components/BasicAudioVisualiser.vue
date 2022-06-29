@@ -21,6 +21,7 @@
     <div id="color-picker"></div>
     <select id="" v-model="visualiserType">
       <option value="simple-bar" selected>Simple Bar</option>
+      <option value="bold-bar">Bold Bar</option>
       <option value="line-bar">Line Bar</option>
     </select>
   </div>
@@ -28,7 +29,11 @@
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
-import { drawSimpleBar, drawLineBar } from "./canvasType/drawSimpleBar";
+import {
+  drawSimpleBar,
+  drawLineBar,
+  drawBoldBar,
+} from "./canvasType/drawSimpleBar";
 import "@simonwep/pickr/dist/themes/classic.min.css"; // 'classic' theme
 import Pickr from "@simonwep/pickr";
 
@@ -124,35 +129,41 @@ export default class BasicAudioVisualiser extends Vue {
   }
 
   async play() {
-    if (this.audioFile === null) {
+    const audioEl = document.getElementById(
+      "audio-input"
+    ) as HTMLInputElement | null;
+
+    if (audioEl === null) {
       alert("音声ファイルが入力されていません");
       return;
     }
+
     const self = this;
     this.initAudioInstances();
 
     //const audioArrayBuffer = await this.audioFile.arrayBuffer();
     this.audioBuffer = null;
-    const al = document.getElementById("audio-input") as HTMLInputElement;
-    this.audioFile.arrayBuffer();
     this.audioBuffer = await this.audioCtx.decodeAudioData(
       //this.audioArrayBuffer!
-      await (al.files as FileList)[0].arrayBuffer()
+      await (audioEl.files as FileList)[0].arrayBuffer()
     );
 
     this.sourceNode.buffer = this.audioBuffer;
     //const freqs = new Uint8Array(this.analyserNode.frequencyBinCount);
     this.sourceNode.connect(this.analyserNode);
     this.sourceNode.connect(this.gainNode).connect(this.audioCtx.destination);
+    let AnimationFrameId = 0;
 
     this.sourceNode.start(0);
     console.log("started");
 
     this.sourceNode.onended = () => {
       console.log("ended");
+      cancelAnimationFrame(AnimationFrameId);
     };
 
-    this.analyserNode.fftSize = 128;
+    //this.analyserNode.fftSize = 128;
+    this.analyserNode.fftSize = 1024;
     const bufferLength = this.analyserNode.frequencyBinCount;
     const dataArray = new Uint8Array(bufferLength);
     const canvasCtx = this.canvasCtx as CanvasRenderingContext2D;
@@ -160,9 +171,19 @@ export default class BasicAudioVisualiser extends Vue {
     this.canvasCtx!.clearRect(0, 0, this.visualWidth, this.visualHeight);
 
     function draw() {
-      requestAnimationFrame(draw);
+      AnimationFrameId = requestAnimationFrame(draw);
       if (self.visualiserType === "simple-bar") {
         drawSimpleBar(
+          canvasCtx,
+          analyserNode,
+          bufferLength,
+          dataArray,
+          self.visualWidth,
+          self.visualHeight,
+          self.barColor
+        );
+      } else if (self.visualiserType === "bold-bar") {
+        drawBoldBar(
           canvasCtx,
           analyserNode,
           bufferLength,

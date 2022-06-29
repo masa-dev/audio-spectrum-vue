@@ -37,6 +37,42 @@ export function drawSimpleBar(
     canvasCtx.fillStyle = barColor; //"rgb(" + (barHeight + 100) + ",50,50)";
     canvasCtx.fillRect(x, height - barHeight / 2, barWidth, barHeight);
 
+    x += barWidth;
+  }
+}
+
+export function drawBoldBar(
+  canvasCtx: CanvasRenderingContext2D,
+  analyser: AnalyserNode,
+  bufferLength: number,
+  dataArray: Uint8Array,
+  width: number,
+  height: number,
+  barColor: string
+) {
+  analyser.getByteFrequencyData(dataArray);
+  canvasCtx.fillStyle = "rgb(0, 0, 0)";
+  canvasCtx.clearRect(0, 0, width, height);
+  canvasCtx.fillStyle = "rgb(0, 0, 0, 0)";
+  canvasCtx.fillRect(0, 0, width, height);
+
+  const barLength = 32;
+  const barWidth = (width / barLength) * 0.9;
+  const elementsCountPerBar = bufferLength / barLength;
+  let x = 0;
+
+  for (let i = 0; i < barLength; i++) {
+    const baseHeight = averageInUnit8Array(
+      dataArray,
+      i * elementsCountPerBar,
+      (i + 1) * elementsCountPerBar
+    );
+
+    const barHeight = (baseHeight / 128) * height * 0.9;
+
+    canvasCtx.fillStyle = barColor; //"rgb(" + (barHeight + 100) + ",50,50)";
+    canvasCtx.fillRect(x, height - barHeight / 2, barWidth, barHeight);
+
     x += barWidth + 1;
   }
 }

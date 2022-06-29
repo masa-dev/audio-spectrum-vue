@@ -1,9 +1,11 @@
 <template>
   <div id="app">
+    <!--
     <button @click="click()">click</button>
     <div>
       <canvas id="my-canvas"></canvas>
     </div>
+    -->
     <!--<BasicAudioVisualiserTest mediaUrl="/music/季節は次々死んでいく.mp3" />-->
     <BasicAudioVisualiser />
   </div>
