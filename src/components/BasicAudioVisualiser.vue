@@ -29,11 +29,7 @@
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
-import {
-  drawSimpleBar,
-  drawLineBar,
-  drawBoldBar,
-} from "./canvasType/drawSimpleBar";
+import { drawSimpleBar, drawLineBar, drawBoldBar } from "./canvasType/drawBar";
 import "@simonwep/pickr/dist/themes/classic.min.css"; // 'classic' theme
 import Pickr from "@simonwep/pickr";
 
@@ -81,7 +77,6 @@ export default class BasicAudioVisualiser extends Vue {
   private pickr: Pickr | null = null;
   private barColor = "#F5732499";
   public visualiserType = "simple-bar";
-  private audioArrayBuffer: ArrayBuffer | null = null;
 
   mounted() {
     this.canvasEl = document.getElementById(
@@ -110,7 +105,6 @@ export default class BasicAudioVisualiser extends Vue {
   async inputAudioFile(event: Event) {
     const target = event.target as HTMLInputElement;
     this.audioFile = (target.files as FileList)[0];
-    this.audioArrayBuffer = await this.audioFile.arrayBuffer();
   }
 
   inputVolume(event: Event) {
@@ -129,11 +123,7 @@ export default class BasicAudioVisualiser extends Vue {
   }
 
   async play() {
-    const audioEl = document.getElementById(
-      "audio-input"
-    ) as HTMLInputElement | null;
-
-    if (audioEl === null) {
+    if (this.audioFile === null) {
       alert("音声ファイルが入力されていません");
       return;
     }
@@ -141,10 +131,9 @@ export default class BasicAudioVisualiser extends Vue {
     const self = this;
     this.initAudioInstances();
 
-    //const audioArrayBuffer = await this.audioFile.arrayBuffer();
+    const audioEl = document.getElementById("audio-input") as HTMLInputElement;
     this.audioBuffer = null;
     this.audioBuffer = await this.audioCtx.decodeAudioData(
-      //this.audioArrayBuffer!
       await (audioEl.files as FileList)[0].arrayBuffer()
     );
 
