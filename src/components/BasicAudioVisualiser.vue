@@ -5,33 +5,76 @@
       :width="visualWidth"
       :height="visualHeight"
     ></canvas>
-    <input @change="inputAudioFile" type="file" id="audio-input" />
-    <button @click="play">PLAY</button>
-    <b-icon-volume-down-fill />
-    <input
-      type="range"
-      id="volume-controller"
-      min="0"
-      max="1"
-      v-model="volume"
-      step="0.05"
-      @input="inputVolume"
-    />
-    <b-icon-volume-up-fill />
-    <div id="color-picker"></div>
-    <select id="" v-model="visualiserType">
-      <option value="simple-bar" selected>Simple Bar</option>
-      <option value="bold-bar">Bold Bar</option>
-      <option value="line-bar">Line Bar</option>
-    </select>
+    <div class="d-flex justify-content-center">
+      <div class="flex-column-center">
+        <button @click="play"><b-icon-play-fill /></button>
+      </div>
+      <div class="flex-column-center">
+        <input
+          @change="inputAudioFile"
+          type="file"
+          id="audio-input"
+          accept="audio/*"
+        />
+      </div>
+      <div class="flex-column-center">
+        <select id="" v-model="visualiserType">
+          <option value="simple-bar" selected>Simple Bar</option>
+          <option value="bold-bar">Bold Bar</option>
+          <option value="line-bar">Line Bar</option>
+        </select>
+      </div>
+      <div class="flex-column-center">
+        <b-icon-volume-down-fill />
+      </div>
+      <div class="flex-column-center">
+        <input
+          type="range"
+          id="volume-controller"
+          min="0"
+          max="1"
+          v-model="volume"
+          step="0.05"
+          @input="inputVolume"
+        />
+      </div>
+      <div class="flex-column-center">
+        <b-icon-volume-up-fill />
+      </div>
+      <div class="flex-column-center">
+        <div id="color-picker"></div>
+      </div>
+    </div>
+    <div>
+      <input
+        type="file"
+        id="background-image"
+        accept="image/*"
+        @change="inputBackgroundImage"
+      />
+    </div>
+    <BackgroundImage :imageUrl="backgroundImageUrl" />
   </div>
 </template>
+
+<style lang="scss">
+.flex-column-center {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.pickr {
+  padding: 0 10px;
+  display: inline-block;
+}
+</style>
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 import { drawSimpleBar, drawLineBar, drawBoldBar } from "./canvasType/drawBar";
 import "@simonwep/pickr/dist/themes/classic.min.css"; // 'classic' theme
 import Pickr from "@simonwep/pickr";
+import BackgroundImage from "./BackgroundImage.vue";
 
 const pickrOptions: Pickr.Options = {
   el: "#color-picker",
@@ -59,7 +102,11 @@ const pickrOptions: Pickr.Options = {
   },
 };
 
-@Component
+@Component({
+  components: {
+    BackgroundImage,
+  },
+})
 export default class BasicAudioVisualiser extends Vue {
   public visualWidth = 100;
   public visualHeight = 100;
@@ -77,6 +124,7 @@ export default class BasicAudioVisualiser extends Vue {
   private pickr: Pickr | null = null;
   private barColor = "#F5732499";
   public visualiserType = "simple-bar";
+  public backgroundImageUrl = "";
 
   mounted() {
     this.canvasEl = document.getElementById(
@@ -105,6 +153,20 @@ export default class BasicAudioVisualiser extends Vue {
   async inputAudioFile(event: Event) {
     const target = event.target as HTMLInputElement;
     this.audioFile = (target.files as FileList)[0];
+  }
+
+  inputBackgroundImage(event: Event) {
+    const reader = new FileReader();
+    const target = event.target as HTMLInputElement;
+    const file = (target.files as FileList)[0];
+    if (file) {
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        this.backgroundImageUrl = reader.result as string;
+      };
+    } else {
+      this.backgroundImageUrl = "";
+    }
   }
 
   inputVolume(event: Event) {

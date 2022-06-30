@@ -11,6 +11,17 @@
   </div>
 </template>
 
+<style lang="scss" scoped>
+#app {
+  margin: 0;
+  position: fixed;
+  left: 0px;
+  right: 0px;
+  top: 0px;
+  bottom: 0px;
+}
+</style>
+
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 import axios from "axios";
