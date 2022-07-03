@@ -123,6 +123,7 @@ export default class BasicAudioVisualiser extends Vue {
   public volume = 0.2;
   private pickr: Pickr | null = null;
   private barColor = "#F5732499";
+  private savedColor = "#F5732499";
   public visualiserType = "simple-bar";
   public backgroundImageUrl = "";
 
@@ -142,6 +143,16 @@ export default class BasicAudioVisualiser extends Vue {
     this.pickr = Pickr.create(pickrOptions);
     this.pickr.on("save", (color: any) => {
       this.barColor = color.toRGBA().toString();
+      this.savedColor = color.toRGBA().toString();
+    });
+    this.pickr.on("change", (color: any) => {
+      this.barColor = color.toRGBA().toString();
+    });
+    this.pickr.on("cancel", () => {
+      this.barColor = this.savedColor;
+    });
+    this.pickr.on("hide", () => {
+      this.barColor = this.savedColor;
     });
   }
 
