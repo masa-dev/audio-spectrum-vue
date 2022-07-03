@@ -55,11 +55,19 @@
         />
       </div>
     </div>
-    <div class="show-control-icon" v-show="isDisplayControlPanel === false">
-      <b-icon-caret-up-square-fill @click="openControlPanel()" />
+    <div
+      class="show-control-icon"
+      v-show="isDisplayControlPanel === false"
+      @click="openControlPanel()"
+    >
+      <b-icon-caret-up-square-fill />
     </div>
-    <div class="show-control-icon" v-show="isDisplayControlPanel === true">
-      <b-icon-caret-down-square-fill @click="closeControlPanel()" />
+    <div
+      class="show-control-icon"
+      v-show="isDisplayControlPanel === true"
+      @click="closeControlPanel()"
+    >
+      <b-icon-caret-down-square-fill />
     </div>
     <BackgroundImage :imageUrl="backgroundImageUrl" />
   </div>
@@ -164,6 +172,7 @@ export default class BasicAudioVisualiser extends Vue {
     this.pickr.on("save", (color: any) => {
       this.barColor = color.toRGBA().toString();
       this.savedColor = color.toRGBA().toString();
+      this.pickr!.hide();
     });
     this.pickr.on("change", (color: any) => {
       this.barColor = color.toRGBA().toString();
