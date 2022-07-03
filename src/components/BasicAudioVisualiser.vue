@@ -54,6 +54,10 @@
           @change="inputBackgroundImage"
         />
       </div>
+      <div>
+        <label for="">遅延</label>
+        <input type="number" value="0" v-model="delayToPlay" />
+      </div>
     </div>
     <div
       class="show-control-icon"
@@ -154,6 +158,7 @@ export default class BasicAudioVisualiser extends Vue {
   public visualiserType = "simple-bar";
   public backgroundImageUrl = "";
   public isDisplayControlPanel = true;
+  public delayToPlay = 0;
 
   mounted() {
     this.canvasEl = document.getElementById(
@@ -252,7 +257,7 @@ export default class BasicAudioVisualiser extends Vue {
     this.sourceNode.connect(this.gainNode).connect(this.audioCtx.destination);
     let AnimationFrameId = 0;
 
-    this.sourceNode.start(0);
+    this.sourceNode.start(this.delayToPlay);
     console.log("started");
 
     this.sourceNode.onended = () => {
