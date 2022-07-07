@@ -263,6 +263,10 @@ export default class BasicAudioVisualiser extends Vue {
     this.sourceNode.onended = () => {
       console.log("ended");
       cancelAnimationFrame(AnimationFrameId);
+      canvasCtx.fillStyle = "rgb(0, 0, 0)";
+      canvasCtx.clearRect(0, 0, this.visualWidth, this.visualHeight);
+      canvasCtx.fillStyle = "rgb(0, 0, 0, 0)";
+      canvasCtx.fillRect(0, 0, this.visualWidth, this.visualHeight);
     };
 
     //this.analyserNode.fftSize = 128;
