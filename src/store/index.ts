@@ -16,6 +16,7 @@ export default new Vuex.Store({
       savedBarColor: "",
       showInputs: false,
       volume: 0.2,
+      imageWidth: 1,
     } as AudioParams,
     remainBars: [] as Array<ReaminBarStatus>,
   },

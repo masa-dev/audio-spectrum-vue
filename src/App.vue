@@ -2,7 +2,10 @@
   <div id="app">
     <BasicAudioVisualiser />
     <InputParams />
-    <BackgroundImage :imageUrl="inputState.imageFileUrl" />
+    <BackgroundImage
+      :imageUrl="inputState.imageFileUrl"
+      :width="inputState.imageWidth"
+    />
     <div
       class="show-control-icon"
       v-show="inputState.showInputs === false"

@@ -23,6 +23,8 @@ import { Component, Prop } from "vue-property-decorator";
 
 interface BackgroundStyle {
   "background-image": string;
+  left: string;
+  width: string;
 }
 
 @Component
@@ -30,14 +32,27 @@ export default class BackgroundImage extends Vue {
   @Prop({ type: String, default: "/audio-spectrum-vue/img/party.png" })
   private imageUrl!: string;
 
+  @Prop({ type: Number, default: 1 })
+  private width!: number;
+
   get getImageUrl(): string {
     const defaultUrl = "/audio-spectrum-vue/img/party.png";
     return this.imageUrl ? this.imageUrl : defaultUrl;
   }
 
+  get getImageWidth(): number {
+    if (this.width > 1 && this.width < 0) {
+      return 1;
+    } else {
+      return this.width;
+    }
+  }
+
   get backgroundStyle(): BackgroundStyle {
     const style: BackgroundStyle = {
       "background-image": `url("${this.getImageUrl}")`,
+      width: `${this.width * 100}%`,
+      left: `${50 - this.width * 50}%`,
     };
     return style;
   }

@@ -8,6 +8,7 @@ export interface AudioParams {
   savedBarColor: string;
   showInputs: boolean;
   volume: number;
+  imageWidth: number;
 }
 
 export interface ReaminBarStatus {

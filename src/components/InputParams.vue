@@ -100,6 +100,29 @@
         <div id="color-picker"></div>
       </div>
     </div>
+
+    <div class="mb-3">
+      <label class="mb-1"
+        >画像の幅: {{ parseInt(state.imageWidth * 100) }}%</label
+      >
+      <input
+        type="range"
+        class="form-range"
+        max="1"
+        min="0"
+        step="0.01"
+        v-model.number="state.imageWidth"
+      />
+    </div>
+
+    <div class="mb-3">
+      <label class="mb-1">画像の幅の自動調整</label>
+      <div>
+        <button class="btn btn-secondary" @click="autoScale">
+          自動スケーリング
+        </button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -182,6 +205,26 @@ export default class InputParams extends Vue {
       };
     } else {
       this.state.imageFileUrl = "";
+    }
+  }
+
+  private autoScale() {
+    if (this.state.imageFile) {
+      const img = new Image();
+
+      img.onload = () => {
+        const width = img.naturalWidth;
+        const height = img.naturalHeight;
+        const maxWidth = window.innerWidth;
+        const maxHeight = window.innerHeight;
+
+        const scale = (width * maxHeight) / (height * maxWidth);
+        this.state.imageWidth = scale > 1 ? 1 : scale;
+
+        URL.revokeObjectURL(img.src);
+      };
+
+      img.src = URL.createObjectURL(this.state.imageFile);
     }
   }
 
