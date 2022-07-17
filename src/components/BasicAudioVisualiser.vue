@@ -8,55 +8,34 @@
     <div id="audio-control-panel" v-show="isDisplayControlPanel">
       <div class="d-flex justify-content-center">
         <div class="flex-column-center">
-          <button @click="play"><b-icon-play-fill /></button>
+          <button id="play-btn" @click="play"><b-icon-play-fill /></button>
         </div>
-        <div class="flex-column-center">
-          <input
-            @change="inputAudioFile"
-            type="file"
-            id="audio-input"
-            accept="audio/*"
-          />
-        </div>
-        <div class="flex-column-center">
-          <select id="" v-model="visualiserType">
+        <div class="flex-column-center mx-4">
+          <select v-model="state.visualiserType" class="form-select">
             <option value="simple-bar" selected>Simple Bar</option>
             <option value="bold-bar">Bold Bar</option>
             <option value="line-bar">Line Bar</option>
           </select>
         </div>
-        <div class="flex-column-center">
-          <b-icon-volume-down-fill />
+        <div class="d-flex">
+          <div class="flex-column-center">
+            <b-icon-volume-down-fill />
+          </div>
+          <div class="flex-column-center">
+            <input
+              type="range"
+              id="volume-controller"
+              min="0"
+              max="1"
+              v-model="state.volume"
+              step="0.05"
+              @input="inputVolume"
+            />
+          </div>
+          <div class="flex-column-center">
+            <b-icon-volume-up-fill />
+          </div>
         </div>
-        <div class="flex-column-center">
-          <input
-            type="range"
-            id="volume-controller"
-            min="0"
-            max="1"
-            v-model="volume"
-            step="0.05"
-            @input="inputVolume"
-          />
-        </div>
-        <div class="flex-column-center">
-          <b-icon-volume-up-fill />
-        </div>
-        <div class="flex-column-center">
-          <div id="color-picker"></div>
-        </div>
-      </div>
-      <div>
-        <input
-          type="file"
-          id="background-image"
-          accept="image/*"
-          @change="inputBackgroundImage"
-        />
-      </div>
-      <div>
-        <label for="">遅延</label>
-        <input type="number" value="0" v-model="delayToPlay" />
       </div>
     </div>
     <div
@@ -73,11 +52,12 @@
     >
       <b-icon-caret-down-square-fill />
     </div>
-    <BackgroundImage :imageUrl="backgroundImageUrl" />
   </div>
 </template>
 
 <style lang="scss">
+@import "../../node_modules/bulma/bulma.sass";
+
 #audio-control-panel {
   padding: 20px 10px;
   height: 150px;
@@ -85,53 +65,36 @@
 .show-control-icon {
   font-size: 1.2rem;
   position: absolute;
-  right: 0;
-  bottom: 0;
-  padding: 20px;
+  right: 20px;
+  bottom: 10px;
+  padding: 0 5px;
+  cursor: pointer;
 }
 .flex-column-center {
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
-.pickr {
-  padding: 0 10px;
-  display: inline-block;
+
+#play-btn {
+  border: none;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  width: 3rem;
+  height: 3rem;
+  aspect-ratio: 1;
+  background-color: rgb(44, 224, 83);
+  color: white;
 }
 </style>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue, Watch } from "vue-property-decorator";
 import { drawSimpleBar, drawLineBar, drawBoldBar } from "./canvasType/drawBar";
+import { AudioParams } from "../store/types";
 import "@simonwep/pickr/dist/themes/classic.min.css"; // 'classic' theme
 import Pickr from "@simonwep/pickr";
 import BackgroundImage from "./BackgroundImage.vue";
-
-const pickrOptions: Pickr.Options = {
-  el: "#color-picker",
-  theme: "classic", // or 'monolith', or 'nano'
-  swatches: [
-    "rgba(244, 67, 54, 0.6)",
-    "rgba(103, 58, 183, 0.85)",
-    "rgba(63, 81, 181, 0.8)",
-    "rgba(0, 188, 212, 0.7)",
-    "rgba(76, 175, 80, 0.8)",
-  ],
-  default: "#F5732499",
-  components: {
-    // Main components
-    preview: true,
-    opacity: true,
-    hue: true,
-    // Input / output Options
-    interaction: {
-      hex: true,
-      rgba: true,
-      input: true,
-      save: true,
-    },
-  },
-};
 
 @Component({
   components: {
@@ -139,11 +102,11 @@ const pickrOptions: Pickr.Options = {
   },
 })
 export default class BasicAudioVisualiser extends Vue {
+  private state: AudioParams = this.$store.state.input;
   public visualWidth = 100;
   public visualHeight = 100;
   private canvasEl: HTMLCanvasElement | null = null;
   private canvasCtx: CanvasRenderingContext2D | null = null;
-  private audioFile: File | null = null;
 
   private audioCtx: AudioContext = new AudioContext();
   private analyserNode: AnalyserNode = this.audioCtx.createAnalyser();
@@ -151,14 +114,13 @@ export default class BasicAudioVisualiser extends Vue {
   private sourceNode: AudioBufferSourceNode =
     this.audioCtx.createBufferSource();
   private audioBuffer: AudioBuffer | null = null;
-  public volume = 0.2;
-  private pickr: Pickr | null = null;
-  private barColor = "#F5732499";
-  private savedColor = "#F5732499";
-  public visualiserType = "simple-bar";
-  public backgroundImageUrl = "";
+
   public isDisplayControlPanel = true;
-  public delayToPlay = 0;
+
+  @Watch("state.volume")
+  onChangeStateVolume() {
+    this.gainNode.gain.value = this.state.volume;
+  }
 
   mounted() {
     this.canvasEl = document.getElementById(
@@ -166,28 +128,12 @@ export default class BasicAudioVisualiser extends Vue {
     ) as HTMLCanvasElement;
 
     this.canvasCtx = this.canvasEl.getContext("2d") as CanvasRenderingContext2D;
-    this.gainNode.gain.value = this.volume;
+    this.gainNode.gain.value = this.state.volume;
 
     this.resizeCanvas();
     window.onresize = () => {
       this.resizeCanvas();
     };
-
-    this.pickr = Pickr.create(pickrOptions);
-    this.pickr.on("save", (color: any) => {
-      this.barColor = color.toRGBA().toString();
-      this.savedColor = color.toRGBA().toString();
-      this.pickr!.hide();
-    });
-    this.pickr.on("change", (color: any) => {
-      this.barColor = color.toRGBA().toString();
-    });
-    this.pickr.on("cancel", () => {
-      this.barColor = this.savedColor;
-    });
-    this.pickr.on("hide", () => {
-      this.barColor = this.savedColor;
-    });
   }
 
   resizeCanvas() {
@@ -195,29 +141,10 @@ export default class BasicAudioVisualiser extends Vue {
     this.visualHeight = window.innerHeight - 150;
   }
 
-  async inputAudioFile(event: Event) {
-    const target = event.target as HTMLInputElement;
-    this.audioFile = (target.files as FileList)[0];
-  }
-
-  inputBackgroundImage(event: Event) {
-    const reader = new FileReader();
-    const target = event.target as HTMLInputElement;
-    const file = (target.files as FileList)[0];
-    if (file) {
-      reader.readAsDataURL(file);
-      reader.onload = () => {
-        this.backgroundImageUrl = reader.result as string;
-      };
-    } else {
-      this.backgroundImageUrl = "";
-    }
-  }
-
   inputVolume(event: Event) {
     const target = event.target as HTMLInputElement;
-    this.volume = parseFloat(target.value);
-    this.gainNode.gain.value = this.volume;
+    this.state.volume = parseFloat(target.value);
+    this.gainNode.gain.value = this.state.volume;
   }
 
   closeControlPanel() {
@@ -237,7 +164,7 @@ export default class BasicAudioVisualiser extends Vue {
   }
 
   async play() {
-    if (this.audioFile === null) {
+    if (this.state.audioFile === null) {
       alert("音声ファイルが入力されていません");
       return;
     }
@@ -257,7 +184,7 @@ export default class BasicAudioVisualiser extends Vue {
     this.sourceNode.connect(this.gainNode).connect(this.audioCtx.destination);
     let AnimationFrameId = 0;
 
-    this.sourceNode.start(this.delayToPlay);
+    this.sourceNode.start(this.state.delayTime);
     console.log("started");
 
     this.sourceNode.onended = () => {
@@ -279,7 +206,7 @@ export default class BasicAudioVisualiser extends Vue {
 
     function draw() {
       AnimationFrameId = requestAnimationFrame(draw);
-      if (self.visualiserType === "simple-bar") {
+      if (self.state.visualiserType === "simple-bar") {
         drawSimpleBar(
           canvasCtx,
           analyserNode,
@@ -287,9 +214,9 @@ export default class BasicAudioVisualiser extends Vue {
           dataArray,
           self.visualWidth,
           self.visualHeight,
-          self.barColor
+          self.state.barColor
         );
-      } else if (self.visualiserType === "bold-bar") {
+      } else if (self.state.visualiserType === "bold-bar") {
         drawBoldBar(
           canvasCtx,
           analyserNode,
@@ -297,9 +224,9 @@ export default class BasicAudioVisualiser extends Vue {
           dataArray,
           self.visualWidth,
           self.visualHeight,
-          self.barColor
+          self.state.barColor
         );
-      } else if (self.visualiserType === "line-bar") {
+      } else if (self.state.visualiserType === "line-bar") {
         drawLineBar(
           canvasCtx,
           analyserNode,
@@ -307,7 +234,7 @@ export default class BasicAudioVisualiser extends Vue {
           dataArray,
           self.visualWidth,
           self.visualHeight,
-          self.barColor
+          self.state.barColor
         );
       }
     }
