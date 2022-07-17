@@ -13,6 +13,6 @@ export interface AudioParams {
 }
 
 export interface ReaminBarStatus {
-  height: number;
+  count: number;
   lastUpdate: Date;
 }
