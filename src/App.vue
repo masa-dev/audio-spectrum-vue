@@ -37,6 +37,12 @@
 }
 </style>
 
+<style>
+html {
+  overflow: hidden;
+}
+</style>
+
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 import axios from "axios";

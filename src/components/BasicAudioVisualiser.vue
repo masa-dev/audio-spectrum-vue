@@ -30,6 +30,7 @@
               v-model="state.volume"
               step="0.05"
               @input="inputVolume"
+              @mousewheel="isHoverVolume = false"
             />
           </div>
           <div class="flex-column-center">
@@ -96,7 +97,6 @@ import { Component, Vue, Watch } from "vue-property-decorator";
 import { drawSimpleBar, drawLineBar, drawBoldBar } from "./canvasType/drawBar";
 import { AudioParams } from "../store/types";
 import "@simonwep/pickr/dist/themes/classic.min.css"; // 'classic' theme
-import Pickr from "@simonwep/pickr";
 import BackgroundImage from "./BackgroundImage.vue";
 
 @Component({
@@ -119,6 +119,7 @@ export default class BasicAudioVisualiser extends Vue {
   private audioBuffer: AudioBuffer | null = null;
 
   public isDisplayControlPanel = true;
+  private isHoverVolume = false;
 
   @Watch("state.volume")
   onChangeStateVolume() {
@@ -141,6 +142,16 @@ export default class BasicAudioVisualiser extends Vue {
     this.resizeCanvas();
     window.onresize = () => {
       this.resizeCanvas();
+    };
+
+    window.onwheel = (e) => {
+      if (this.isHoverVolume) {
+        if (e.deltaY < 0 && this.state.volume < 1) {
+          this.state.volume += 0.05;
+        } else if (e.deltaY > 0 && this.state.volume > 0) {
+          this.state.volume -= 0.05;
+        }
+      }
     };
   }
 
@@ -217,7 +228,7 @@ export default class BasicAudioVisualiser extends Vue {
     const dataArray = new Uint8Array(bufferLength);
     const canvasCtx = this.canvasCtx as CanvasRenderingContext2D;
     const analyserNode = this.analyserNode;
-    this.canvasCtx!.clearRect(0, 0, this.visualWidth, this.visualHeight);
+    canvasCtx.clearRect(0, 0, this.visualWidth, this.visualHeight);
 
     function draw() {
       AnimationFrameId = requestAnimationFrame(draw);

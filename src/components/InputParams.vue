@@ -87,6 +87,8 @@
           v-model="state.volume"
           step="0.05"
           @input="inputVolume"
+          @mouseover="isHoverVolume = true"
+          @mouseleave="isHoverVolume = false"
         />
       </div>
       <div class="col-1">
@@ -219,6 +221,7 @@ const pickrOptions: Pickr.Options = {
 export default class InputParams extends Vue {
   private state: AudioParams = this.$store.state.input;
   private pickr: Pickr | null = null;
+  private isHoverVolume = false;
 
   private inputImage(event: InputEvent) {
     const reader = new FileReader();
@@ -295,6 +298,16 @@ export default class InputParams extends Vue {
         this.state.barColor = this.state.savedBarColor;
       });
     });
+
+    window.onwheel = (e) => {
+      if (this.isHoverVolume) {
+        if (e.deltaY < 0 && this.state.volume < 1) {
+          this.state.volume += 0.05;
+        } else if (e.deltaY > 0 && this.state.volume > 0) {
+          this.state.volume -= 0.05;
+        }
+      }
+    };
   }
 }
 </script>
