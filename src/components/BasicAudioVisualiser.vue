@@ -40,6 +40,7 @@
     </div>
     <div
       class="show-control-icon"
+      title="コントロールパネルを表示する"
       v-show="isDisplayControlPanel === false"
       @click="openControlPanel()"
     >
@@ -47,6 +48,7 @@
     </div>
     <div
       class="show-control-icon"
+      title="コントロールパネルを非表示にする"
       v-show="isDisplayControlPanel === true"
       @click="closeControlPanel()"
     >
@@ -69,6 +71,7 @@
   bottom: 10px;
   padding: 0 5px;
   cursor: pointer;
+  z-index: 6;
 }
 .flex-column-center {
   display: flex;

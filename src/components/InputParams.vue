@@ -155,6 +155,7 @@
   height: 100vh;
   background-color: white;
   overflow-y: auto;
+  z-index: 5;
 }
 
 .close-input {

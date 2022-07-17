@@ -8,8 +8,8 @@
     />
     <div
       class="show-control-icon"
-      v-show="inputState.showInputs === false"
-      @click="inputState.showInputs = true"
+      title="詳細設定"
+      @click="inputState.showInputs = !inputState.showInputs"
     >
       <b-icon-gear-fill />
     </div>
@@ -33,6 +33,7 @@
   bottom: 50px;
   padding: 0 5px;
   cursor: pointer;
+  z-index: 6;
 }
 </style>
 
