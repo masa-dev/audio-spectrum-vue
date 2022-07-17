@@ -102,6 +102,20 @@
     </div>
 
     <div class="mb-3">
+      <label
+        >ビジュアライザーの幅: {{ parseInt(state.canvasWidth * 100) }}%</label
+      >
+      <input
+        type="range"
+        class="form-range"
+        max="1"
+        min="0"
+        step="0.01"
+        v-model.number="state.canvasWidth"
+      />
+    </div>
+
+    <div class="mb-3">
       <label class="mb-1"
         >画像の幅: {{ parseInt(state.imageWidth * 100) }}%</label
       >
@@ -118,8 +132,12 @@
     <div class="mb-3">
       <label class="mb-1">画像の幅の自動調整</label>
       <div>
-        <button class="btn btn-secondary" @click="autoScale">
-          自動スケーリング
+        <button
+          class="btn btn-secondary"
+          @click="autoScale"
+          :disabled="!state.imageFile"
+        >
+          画像幅の自動調整
         </button>
       </div>
     </div>
@@ -129,13 +147,14 @@
 <style lang="scss" scoped>
 .input-params {
   position: absolute;
-  width: 400px;
   padding: 1rem 1.5rem;
   top: 0;
   right: 0;
   text-align: left;
-  background-color: white;
+  width: 400px;
   height: 100vh;
+  background-color: white;
+  overflow-y: auto;
 }
 
 .close-input {
@@ -154,6 +173,12 @@
 .bi-volume-up-fill,
 .bi-volume-down-fill {
   font-size: 1.5rem;
+}
+
+@media only screen and (max-width: 400px) {
+  .input-params {
+    width: 100%;
+  }
 }
 </style>
 

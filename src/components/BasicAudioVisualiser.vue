@@ -122,6 +122,11 @@ export default class BasicAudioVisualiser extends Vue {
     this.gainNode.gain.value = this.state.volume;
   }
 
+  @Watch("state.canvasWidth")
+  onChangeCanvasWidth() {
+    this.resizeCanvas();
+  }
+
   mounted() {
     this.canvasEl = document.getElementById(
       "visualiser-canvas"
@@ -137,8 +142,13 @@ export default class BasicAudioVisualiser extends Vue {
   }
 
   resizeCanvas() {
-    this.visualWidth = window.innerWidth;
-    this.visualHeight = window.innerHeight - 150;
+    this.visualWidth = window.innerWidth * this.state.canvasWidth;
+
+    if (this.isDisplayControlPanel) {
+      this.visualHeight = window.innerHeight - 150;
+    } else {
+      this.visualHeight = window.innerHeight;
+    }
   }
 
   inputVolume(event: Event) {
@@ -149,9 +159,11 @@ export default class BasicAudioVisualiser extends Vue {
 
   closeControlPanel() {
     this.isDisplayControlPanel = false;
+    this.resizeCanvas();
   }
   openControlPanel() {
     this.isDisplayControlPanel = true;
+    this.resizeCanvas();
   }
 
   initAudioInstances() {

@@ -9,6 +9,7 @@ export interface AudioParams {
   showInputs: boolean;
   volume: number;
   imageWidth: number;
+  canvasWidth: number;
 }
 
 export interface ReaminBarStatus {
