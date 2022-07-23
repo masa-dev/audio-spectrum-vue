@@ -1,4 +1,5 @@
 import store from "../../store/index";
+import { drawCurve } from "../../util/curve";
 
 function averageInUnit8Array(
   array: Uint8Array,
@@ -155,4 +156,50 @@ export function drawLineBar(
 
     x += barWidth + 10;
   }
+}
+
+export function drawCurveBar(
+  canvasCtx: CanvasRenderingContext2D,
+  analyser: AnalyserNode,
+  bufferLength: number,
+  dataArray: Uint8Array,
+  width: number,
+  height: number,
+  barColor: string
+) {
+  analyser.getByteFrequencyData(dataArray);
+  canvasCtx.fillStyle = "rgb(0, 0, 0)";
+  canvasCtx.clearRect(0, 0, width, height);
+  canvasCtx.fillStyle = "rgb(0, 0, 0, 0)";
+  canvasCtx.fillRect(0, 0, width, height);
+
+  const barLength = 32;
+  const barWidth = (width / barLength) * 1;
+  const elementsCountPerBar = bufferLength / barLength;
+  const barHeightList: number[] = [];
+  const points: number[] = [];
+
+  for (let i = 0; i < barLength; i++) {
+    const baseHeight = averageInUnit8Array(
+      dataArray,
+      i * elementsCountPerBar,
+      (i + 1) * elementsCountPerBar
+    );
+
+    const barHeight = (baseHeight / 128) * height * 0.9;
+    points.push((i + 1) * barWidth, height - barHeight / 2);
+  }
+
+  points.unshift(0, points[1]);
+  canvasCtx.beginPath();
+  canvasCtx.moveTo(0, height);
+  canvasCtx.lineTo(0, height - points[1]);
+
+  drawCurve(canvasCtx, points, 1);
+
+  canvasCtx.lineTo(barWidth * (barHeightList.length - 1), height);
+  canvasCtx.lineTo(0, height);
+
+  canvasCtx.fillStyle = barColor;
+  canvasCtx.fill();
 }

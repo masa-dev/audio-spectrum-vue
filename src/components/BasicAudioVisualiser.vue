@@ -15,6 +15,7 @@
             <option value="simple-bar" selected>Simple Bar</option>
             <option value="bold-bar">Bold Bar</option>
             <option value="line-bar">Line Bar</option>
+            <option value="curve-bar">Curve Bar</option>
           </select>
         </div>
         <div class="d-flex">
@@ -94,7 +95,12 @@
 
 <script lang="ts">
 import { Component, Vue, Watch } from "vue-property-decorator";
-import { drawSimpleBar, drawLineBar, drawBoldBar } from "./canvasType/drawBar";
+import {
+  drawSimpleBar,
+  drawLineBar,
+  drawBoldBar,
+  drawCurveBar,
+} from "./canvasType/drawBar";
 import { AudioParams } from "../store/types";
 import "@simonwep/pickr/dist/themes/classic.min.css"; // 'classic' theme
 import BackgroundImage from "./BackgroundImage.vue";
@@ -254,6 +260,16 @@ export default class BasicAudioVisualiser extends Vue {
         );
       } else if (self.state.visualiserType === "line-bar") {
         drawLineBar(
+          canvasCtx,
+          analyserNode,
+          bufferLength,
+          dataArray,
+          self.visualWidth,
+          self.visualHeight,
+          self.state.barColor
+        );
+      } else if (self.state.visualiserType === "curve-bar") {
+        drawCurveBar(
           canvasCtx,
           analyserNode,
           bufferLength,

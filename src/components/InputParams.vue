@@ -60,6 +60,7 @@
         <option value="simple-bar" selected>Simple Bar</option>
         <option value="bold-bar">Bold Bar</option>
         <option value="line-bar">Line Bar</option>
+        <option value="curve-bar">Curve Bar</option>
       </select>
     </div>
 
