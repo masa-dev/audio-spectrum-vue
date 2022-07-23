@@ -280,7 +280,6 @@ export default class BasicAudioVisualiser extends Vue {
         this.sourceNode = this.audioCtx.createBufferSource();
       } catch (e) {
         if (e instanceof DOMException) {
-          alert("再生されている音声はありません");
         } else if (e instanceof Error) {
           console.error((e as Error).name + ": " + (e as Error).message);
         } else {
