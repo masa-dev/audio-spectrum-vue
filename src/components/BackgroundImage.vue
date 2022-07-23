@@ -1,5 +1,8 @@
 <template>
-  <div class="image-wrapper" :style="backgroundStyle"></div>
+  <div>
+    <div class="image-blur-wrapper" :style="backgroundStyle"></div>
+    <div class="image-wrapper" :style="backgroundStyle"></div>
+  </div>
 </template>
 
 <style lang="scss">
@@ -14,6 +17,21 @@
   background-position: center;
   background-size: cover;
   z-index: -10;
+}
+
+.image-blur-wrapper {
+  position: absolute;
+  top: -40px !important;
+  left: -40px !important;
+  width: calc(100% + 80px) !important;
+  min-height: calc(100vh + 80px) !important;
+  background-image: url("@/assets/party.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  z-index: -11;
+
+  filter: blur(20px);
 }
 </style>
 
