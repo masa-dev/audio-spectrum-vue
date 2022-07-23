@@ -8,7 +8,39 @@
     <div id="audio-control-panel" v-show="isDisplayControlPanel">
       <div class="d-flex justify-content-center">
         <div class="flex-column-center">
-          <button id="play-btn" @click="play"><b-icon-play-fill /></button>
+          <button
+            id="play-btn"
+            class="control-btn"
+            v-if="!playing"
+            @click="play"
+          >
+            <b-icon-play-fill />
+          </button>
+        </div>
+        <div class="flex-column-center">
+          <button
+            id="pause-btn"
+            class="control-btn"
+            v-if="playing"
+            @click="pause"
+          >
+            <b-icon-pause-fill />
+          </button>
+        </div>
+        <div class="flex-column-center">
+          <button id="stop-btn" class="control-btn" @click="stop">
+            <b-icon-stop-fill />
+          </button>
+        </div>
+        <div class="flex-column-center px-3">
+          <div v-if="durationTime && currentTime">
+            {{ parseTimeToString(currentTime, "mm:ss") }} /
+            {{ parseTimeToString(durationTime, "mm:ss") }}
+          </div>
+          <div v-else>
+            {{ parseTimeToString(0, "mm:ss") }} /
+            {{ parseTimeToString(0, "mm:ss") }}
+          </div>
         </div>
         <div class="flex-column-center mx-4">
           <select v-model="state.visualiserType" class="form-select">
@@ -81,15 +113,24 @@
   justify-content: center;
 }
 
-#play-btn {
+.control-btn {
+  margin: 5px;
   border: none;
   border-radius: 50%;
   font-size: 1.5rem;
   width: 3rem;
   height: 3rem;
   aspect-ratio: 1;
-  background-color: rgb(44, 224, 83);
   color: white;
+}
+
+#play-btn,
+#pause-btn {
+  background-color: rgb(44, 224, 83);
+}
+
+#stop-btn {
+  background-color: var(--bs-red);
 }
 </style>
 
@@ -104,6 +145,7 @@ import {
 import { AudioParams } from "../store/types";
 import "@simonwep/pickr/dist/themes/classic.min.css"; // 'classic' theme
 import BackgroundImage from "./BackgroundImage.vue";
+import { parseTimeToString } from "../util/time";
 
 @Component({
   components: {
@@ -124,8 +166,13 @@ export default class BasicAudioVisualiser extends Vue {
     this.audioCtx.createBufferSource();
   private audioBuffer: AudioBuffer | null = null;
 
+  private parseTimeToString = parseTimeToString;
   public isDisplayControlPanel = true;
   private isHoverVolume = false;
+  private startedAt = 0;
+  private pausedAt = 0;
+  private currentTime = 0;
+  private playing = false;
 
   @Watch("state.volume")
   onChangeStateVolume() {
@@ -158,6 +205,26 @@ export default class BasicAudioVisualiser extends Vue {
           this.state.volume -= 0.05;
         }
       }
+    };
+
+    setInterval(() => {
+      if (this.pausedAt !== 0) {
+        this.currentTime = this.pausedAt;
+      } else if (this.startedAt !== 0) {
+        this.currentTime = this.audioCtx.currentTime - this.startedAt;
+      } else {
+        this.currentTime = 0;
+      }
+    }, 100);
+  }
+
+  get playStatus() {
+    return {
+      playing: this.playing,
+      startedAt: this.startedAt,
+      pausedAt: this.pausedAt,
+      durationTime: this.durationTime,
+      currentTime: this.currentTime,
     };
   }
 
@@ -195,13 +262,35 @@ export default class BasicAudioVisualiser extends Vue {
     this.gainNode.gain.value = volume;
   }
 
+  get durationTime() {
+    return this.audioBuffer ? this.audioBuffer.duration : 0;
+  }
+
+  pause() {
+    let elapsedTime = this.audioCtx.currentTime + Math.abs(this.startedAt);
+    this.stop();
+    this.pausedAt = elapsedTime;
+  }
+
+  stop() {
+    if (this.sourceNode) {
+      this.sourceNode.disconnect();
+      this.sourceNode.stop();
+      this.sourceNode = this.audioCtx.createBufferSource();
+    }
+    this.pausedAt = 0;
+    this.startedAt = 0;
+    this.playing = false;
+  }
+
   async play() {
-    if (this.state.audioFile === null) {
+    if (this.state.audioFile === null || this.state.audioFile === undefined) {
       alert("音声ファイルが入力されていません");
       return;
     }
 
     const self = this;
+    const offsetTime = this.pausedAt;
     this.initAudioInstances();
 
     const audioEl = document.getElementById("audio-input") as HTMLInputElement;
@@ -216,7 +305,7 @@ export default class BasicAudioVisualiser extends Vue {
     this.sourceNode.connect(this.gainNode).connect(this.audioCtx.destination);
     let AnimationFrameId = 0;
 
-    this.sourceNode.start(this.state.delayTime);
+    this.sourceNode.start(this.state.delayTime, offsetTime);
     console.log("started");
 
     this.sourceNode.onended = () => {
@@ -226,7 +315,15 @@ export default class BasicAudioVisualiser extends Vue {
       canvasCtx.clearRect(0, 0, this.visualWidth, this.visualHeight);
       canvasCtx.fillStyle = "rgb(0, 0, 0, 0)";
       canvasCtx.fillRect(0, 0, this.visualWidth, this.visualHeight);
+
+      this.stop();
     };
+
+    // 再生状態変更
+    this.startedAt =
+      this.audioCtx.currentTime - offsetTime + this.state.delayTime;
+    this.pausedAt = 0;
+    this.playing = true;
 
     //this.analyserNode.fftSize = 128;
     this.analyserNode.fftSize = 1024;

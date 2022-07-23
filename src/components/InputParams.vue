@@ -70,7 +70,7 @@
         class="form-control"
         type="number"
         min="0"
-        v-model="state.delayTime"
+        v-model.number="state.delayTime"
       />
     </div>
 
