@@ -6,12 +6,12 @@
       :height="visualHeight"
     ></canvas>
     <div id="audio-control-panel" v-show="isDisplayControlPanel">
-      <div class="d-flex justify-content-center">
+      <div class="d-flex flex-wrap justify-content-center">
         <div class="flex-column-center">
           <button
             id="play-btn"
             class="control-btn"
-            v-if="!playing"
+            v-if="!playState.playing"
             @click="play"
           >
             <b-icon-play-fill />
@@ -21,7 +21,7 @@
           <button
             id="pause-btn"
             class="control-btn"
-            v-if="playing"
+            v-if="playState.playing"
             @click="pause"
           >
             <b-icon-pause-fill />
@@ -33,9 +33,9 @@
           </button>
         </div>
         <div class="flex-column-center px-3">
-          <div v-if="durationTime && currentTime">
-            {{ parseTimeToString(currentTime, "mm:ss") }} /
-            {{ parseTimeToString(durationTime, "mm:ss") }}
+          <div v-if="playState.durationTime && playState.currentTime">
+            {{ parseTimeToString(playState.currentTime, "mm:ss") }} /
+            {{ parseTimeToString(playState.durationTime, "mm:ss") }}
           </div>
           <div v-else>
             {{ parseTimeToString(0, "mm:ss") }} /
@@ -142,7 +142,7 @@ import {
   drawBoldBar,
   drawCurveBar,
 } from "./canvasType/drawBar";
-import { AudioParams } from "../store/types";
+import { AudioParams, PlayStatusParams } from "../store/types";
 import "@simonwep/pickr/dist/themes/classic.min.css"; // 'classic' theme
 import BackgroundImage from "./BackgroundImage.vue";
 import { parseTimeToString } from "../util/time";
@@ -154,6 +154,7 @@ import { parseTimeToString } from "../util/time";
 })
 export default class BasicAudioVisualiser extends Vue {
   private state: AudioParams = this.$store.state.input;
+  private playState: PlayStatusParams = this.$store.state.play;
   public visualWidth = 100;
   public visualHeight = 100;
   private canvasEl: HTMLCanvasElement | null = null;
@@ -169,10 +170,6 @@ export default class BasicAudioVisualiser extends Vue {
   private parseTimeToString = parseTimeToString;
   public isDisplayControlPanel = true;
   private isHoverVolume = false;
-  private startedAt = 0;
-  private pausedAt = 0;
-  private currentTime = 0;
-  private playing = false;
 
   @Watch("state.volume")
   onChangeStateVolume() {
@@ -208,24 +205,21 @@ export default class BasicAudioVisualiser extends Vue {
     };
 
     setInterval(() => {
-      if (this.pausedAt !== 0) {
-        this.currentTime = this.pausedAt;
-      } else if (this.startedAt !== 0) {
-        this.currentTime = this.audioCtx.currentTime - this.startedAt;
+      console.log(this.playState);
+
+      this.playState.durationTime = this.audioBuffer
+        ? this.audioBuffer.duration
+        : 0;
+
+      if (this.playState.pausedAt !== 0) {
+        this.playState.currentTime = this.playState.pausedAt;
+      } else if (this.playState.startedAt !== 0) {
+        this.playState.currentTime =
+          this.audioCtx.currentTime - this.playState.startedAt;
       } else {
-        this.currentTime = 0;
+        this.playState.currentTime = 0;
       }
     }, 100);
-  }
-
-  get playStatus() {
-    return {
-      playing: this.playing,
-      startedAt: this.startedAt,
-      pausedAt: this.pausedAt,
-      durationTime: this.durationTime,
-      currentTime: this.currentTime,
-    };
   }
 
   resizeCanvas() {
@@ -267,9 +261,10 @@ export default class BasicAudioVisualiser extends Vue {
   }
 
   pause() {
-    let elapsedTime = this.audioCtx.currentTime + Math.abs(this.startedAt);
+    let elapsedTime =
+      this.audioCtx.currentTime + Math.abs(this.playState.startedAt);
     this.stop();
-    this.pausedAt = elapsedTime;
+    this.playState.pausedAt = elapsedTime;
   }
 
   stop() {
@@ -278,9 +273,9 @@ export default class BasicAudioVisualiser extends Vue {
       this.sourceNode.stop();
       this.sourceNode = this.audioCtx.createBufferSource();
     }
-    this.pausedAt = 0;
-    this.startedAt = 0;
-    this.playing = false;
+    this.playState.pausedAt = 0;
+    this.playState.startedAt = 0;
+    this.playState.playing = false;
   }
 
   async play() {
@@ -290,7 +285,7 @@ export default class BasicAudioVisualiser extends Vue {
     }
 
     const self = this;
-    const offsetTime = this.pausedAt;
+    const offsetTime = this.playState.pausedAt;
     this.initAudioInstances();
 
     const audioEl = document.getElementById("audio-input") as HTMLInputElement;
@@ -320,10 +315,10 @@ export default class BasicAudioVisualiser extends Vue {
     };
 
     // 再生状態変更
-    this.startedAt =
+    this.playState.startedAt =
       this.audioCtx.currentTime - offsetTime + this.state.delayTime;
-    this.pausedAt = 0;
-    this.playing = true;
+    this.playState.pausedAt = 0;
+    this.playState.playing = true;
 
     //this.analyserNode.fftSize = 128;
     this.analyserNode.fftSize = 1024;

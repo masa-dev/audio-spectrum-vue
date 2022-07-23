@@ -12,6 +12,14 @@ export interface AudioParams {
   canvasWidth: number;
 }
 
+export interface PlayStatusParams {
+  startedAt: number;
+  pausedAt: number;
+  currentTime: number;
+  durationTime: number;
+  playing: boolean;
+}
+
 export interface ReaminBarStatus {
   count: number;
   lastUpdate: Date;
