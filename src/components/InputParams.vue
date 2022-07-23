@@ -85,7 +85,7 @@
           id="volume-controller"
           min="0"
           max="1"
-          v-model="state.volume"
+          v-model.number="state.volume"
           step="0.05"
           @input="inputVolume"
           @mouseover="isHoverVolume = true"
@@ -144,6 +144,15 @@
         </button>
       </div>
     </div>
+
+    <div class="mb-3">
+      <label class="mb-1">テスト音声を再生する</label>
+      <div>
+        <button class="btn btn-info" @click="playDefaultAudio">
+          テスト再生
+        </button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -188,7 +197,7 @@
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
-import { AudioParams } from "../store/types";
+import { AudioParams, PlayStatusParams } from "../store/types";
 import Pickr from "@simonwep/pickr";
 import "@simonwep/pickr/dist/themes/classic.min.css"; // 'classic' theme
 
@@ -223,6 +232,7 @@ const pickrOptions: Pickr.Options = {
 @Component
 export default class InputParams extends Vue {
   private state: AudioParams = this.$store.state.input;
+  private playState: PlayStatusParams = this.$store.state.play;
   private pickr: Pickr | null = null;
   private isHoverVolume = false;
 
@@ -260,6 +270,30 @@ export default class InputParams extends Vue {
     }
   }
 
+  private async playDefaultAudio() {
+    if (this.playState.playing) {
+      alert("再生中は別の音声を再生できません");
+    }
+    const playBtn = document.getElementById("play-btn") as HTMLButtonElement;
+    const audioEl = document.getElementById("audio-input") as HTMLInputElement;
+
+    try {
+      const res = await fetch(
+        "https://masa-dev.github.io/audio-spectrum-vue/audio/weekend.wav"
+      );
+      const blob = await res.blob();
+      const file = new File([blob], "weekend.wav");
+      const dt = new DataTransfer();
+      dt.items.add(file);
+
+      audioEl.files! = dt.files;
+      this.state.audioFile = file;
+      playBtn.click();
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
   private inputAudio(event: InputEvent) {
     const input = event.target as HTMLInputElement;
     if (input.files) {
@@ -292,7 +326,6 @@ export default class InputParams extends Vue {
         this.pickr!.hide();
       });
       this.pickr.on("change", (color: Pickr.HSVaColor) => {
-        console.log(color);
         this.state.barColor = color.toRGBA().toString();
       });
       this.pickr.on("cancel", () => {

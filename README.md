@@ -32,9 +32,9 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 
 https://masa-dev.github.io/audio-spectrum-vue/
 
-### サンプル音源（未実装）
+### サンプル音源
 
-サンプル音源は[騒音のない世界](https://noiselessworld.net/)のフリー BGM の[きらめくウィークエンド](https://soundcloud.com/baron1_3/weekend?in=baron1_3/sets/band_inst)を用いる予定です。
+サンプル音源は[騒音のない世界](https://noiselessworld.net/)のフリー BGM の[きらめくウィークエンド](https://soundcloud.com/baron1_3/weekend?in=baron1_3/sets/band_inst)を用いています。
 
 ### 参考
 

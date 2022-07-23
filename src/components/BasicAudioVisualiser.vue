@@ -60,7 +60,7 @@
               id="volume-controller"
               min="0"
               max="1"
-              v-model="state.volume"
+              v-model.number="state.volume"
               step="0.05"
               @input="inputVolume"
               @mousewheel="isHoverVolume = false"
@@ -274,9 +274,19 @@ export default class BasicAudioVisualiser extends Vue {
 
   stop() {
     if (this.sourceNode) {
-      this.sourceNode.disconnect();
-      this.sourceNode.stop();
-      this.sourceNode = this.audioCtx.createBufferSource();
+      try {
+        this.sourceNode.disconnect();
+        this.sourceNode.stop();
+        this.sourceNode = this.audioCtx.createBufferSource();
+      } catch (e) {
+        if (e instanceof DOMException) {
+          alert("再生されている音声はありません");
+        } else if (e instanceof Error) {
+          console.error((e as Error).name + ": " + (e as Error).message);
+        } else {
+          console.error(e);
+        }
+      }
     }
     this.playState.pausedAt = 0;
     this.playState.startedAt = 0;
