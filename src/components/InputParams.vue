@@ -196,7 +196,9 @@ const pickrOptions: Pickr.Options = {
   el: "#color-picker",
   theme: "classic", // or 'monolith', or 'nano'
   swatches: [
+    "rgba(244, 231, 54, 0.7)",
     "rgba(244, 67, 54, 0.6)",
+    "rgba(244, 54, 171, 0.7)",
     "rgba(103, 58, 183, 0.85)",
     "rgba(63, 81, 181, 0.8)",
     "rgba(0, 188, 212, 0.7)",
