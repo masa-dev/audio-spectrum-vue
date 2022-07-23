@@ -286,12 +286,13 @@ export default class InputParams extends Vue {
     Vue.nextTick(() => {
       this.pickr = Pickr.create(pickrOptions);
 
-      this.pickr.on("save", (color: any) => {
+      this.pickr.on("save", (color: Pickr.HSVaColor) => {
         this.state.barColor = color.toRGBA().toString();
         this.state.savedBarColor = color.toRGBA().toString();
         this.pickr!.hide();
       });
-      this.pickr.on("change", (color: any) => {
+      this.pickr.on("change", (color: Pickr.HSVaColor) => {
+        console.log(color);
         this.state.barColor = color.toRGBA().toString();
       });
       this.pickr.on("cancel", () => {

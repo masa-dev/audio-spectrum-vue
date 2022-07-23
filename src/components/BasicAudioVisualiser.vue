@@ -34,12 +34,12 @@
         </div>
         <div class="flex-column-center px-3">
           <div v-if="playState.durationTime && playState.currentTime">
-            {{ parseTimeToString(playState.currentTime, "mm:ss") }} /
-            {{ parseTimeToString(playState.durationTime, "mm:ss") }}
+            {{ parseTimeToString(playState.currentTime, "m:ss") }} /
+            {{ parseTimeToString(playState.durationTime, "m:ss") }}
           </div>
           <div v-else>
-            {{ parseTimeToString(0, "mm:ss") }} /
-            {{ parseTimeToString(0, "mm:ss") }}
+            {{ parseTimeToString(0, "m:ss") }} /
+            {{ parseTimeToString(0, "m:ss") }}
           </div>
         </div>
         <div class="flex-column-center mx-4">
@@ -181,6 +181,13 @@ export default class BasicAudioVisualiser extends Vue {
     this.resizeCanvas();
   }
 
+  @Watch("state.audioFile")
+  onAudioChange() {
+    if (this.playState.playing && this.playState.pausedAt > 0) {
+      this.stop();
+    }
+  }
+
   mounted() {
     this.canvasEl = document.getElementById(
       "visualiser-canvas"
@@ -205,8 +212,6 @@ export default class BasicAudioVisualiser extends Vue {
     };
 
     setInterval(() => {
-      console.log(this.playState);
-
       this.playState.durationTime = this.audioBuffer
         ? this.audioBuffer.duration
         : 0;

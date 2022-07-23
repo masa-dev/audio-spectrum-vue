@@ -9,11 +9,21 @@ export function parseTimeToString(seconds: number, format: string) {
   };
 
   const stringTime = format
-    .replace("HH", devidedTime.hours.toString())
-    .replace("hh", devidedTime.hours.toString())
-    .replace("mm", devidedTime.minutes.toString())
-    .replace("SS", devidedTime.seconds.toString())
-    .replace("ss", devidedTime.seconds.toString());
+    .replace("HH", toTwoDigit(devidedTime.hours))
+    .replace("hh", toTwoDigit(devidedTime.hours))
+    .replace("mm", toTwoDigit(devidedTime.minutes))
+    .replace("SS", toTwoDigit(devidedTime.seconds))
+    .replace("ss", toTwoDigit(devidedTime.seconds))
+    .replace("H", devidedTime.hours.toString())
+    .replace("h", devidedTime.hours.toString())
+    .replace("m", devidedTime.minutes.toString())
+    .replace("S", devidedTime.seconds.toString())
+    .replace("s", devidedTime.seconds.toString());
 
   return `${isMinus ? "-" : ""}${stringTime}`;
+}
+
+function toTwoDigit(num: number) {
+  const numStr = "00" + num.toString();
+  return numStr.slice(-2);
 }
