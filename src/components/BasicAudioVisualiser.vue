@@ -278,6 +278,9 @@ export default class BasicAudioVisualiser extends Vue {
         this.sourceNode.disconnect();
         this.sourceNode.stop();
         this.sourceNode = this.audioCtx.createBufferSource();
+        this.playState.pausedAt = 0;
+        this.playState.startedAt = 0;
+        this.playState.playing = false;
       } catch (e) {
         if (e instanceof DOMException) {
           //
@@ -288,9 +291,6 @@ export default class BasicAudioVisualiser extends Vue {
         }
       }
     }
-    this.playState.pausedAt = 0;
-    this.playState.startedAt = 0;
-    this.playState.playing = false;
   }
 
   async play() {
